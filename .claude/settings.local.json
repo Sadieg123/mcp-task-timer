@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(node build/index.js:*)",
+      "Bash(printf:*)",
+      "Bash(python3:*)",
+      "mcp__task-timer__start_timer",
+      "mcp__task-timer__stop_timer"
+    ]
+  }
+}

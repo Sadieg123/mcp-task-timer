@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "task-timer": {
+      "command": "node",
+      "args": ["/Users/sadie/Desktop/DIG 4503/week 4 exercise/build/index.js"]
+    }
+  }
+}
