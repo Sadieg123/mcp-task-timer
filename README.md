@@ -39,5 +39,17 @@ week 4 exercise/
 git clone https://github.com/Sadieg123/mcp-task-timer.git
 cd mcp-task-timer
 
+# Install dependencies
+npm install
+
+# Compile TypeScript
+npm run build
+
+# Run the MCP server
+node build/index.js
+
+# Leave this terminal running while using Claude Code
+
+
 
 
