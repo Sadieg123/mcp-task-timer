@@ -5,6 +5,24 @@ import { z } from "zod";
 // In-memory store: task name → start timestamp (ms)
 const timers = new Map<string, number>();
 
+// ─── Helper: formatElapsed ────────────────────────────────────────────
+function formatElapsed(elapsedMs: number): string {
+  const totalSeconds = elapsedMs / 1000;
+
+  if (totalSeconds < 60) {
+    return `${totalSeconds.toFixed(1)} seconds`;
+  } else if (totalSeconds < 3600) {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = (totalSeconds % 60).toFixed(1);
+    return `${minutes} min ${seconds} sec`;
+  } else {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = (totalSeconds % 60).toFixed(1);
+    return `${hours} hr ${minutes} min ${seconds} sec`;
+  }
+}
+
 // Create the MCP server
 const server = new McpServer({
   name: "task-timer",
@@ -67,28 +85,49 @@ server.tool(
     const elapsedMs = Date.now() - startTime;
     timers.delete(task_name);
 
-    // Format elapsed time nicely
-    const totalSeconds = elapsedMs / 1000;
-    let formatted: string;
-
-    if (totalSeconds < 60) {
-      formatted = `${totalSeconds.toFixed(1)} seconds`;
-    } else if (totalSeconds < 3600) {
-      const minutes = Math.floor(totalSeconds / 60);
-      const seconds = (totalSeconds % 60).toFixed(1);
-      formatted = `${minutes} min ${seconds} sec`;
-    } else {
-      const hours = Math.floor(totalSeconds / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
-      const seconds = (totalSeconds % 60).toFixed(1);
-      formatted = `${hours} hr ${minutes} min ${seconds} sec`;
-    }
+    const formatted = formatElapsed(elapsedMs);
 
     return {
       content: [
         {
           type: "text" as const,
           text: `Timer stopped for '${task_name}'. Elapsed time: ${formatted}`,
+        },
+      ],
+    };
+  }
+);
+
+// ─── Tool: list_timers ───────────────────────────────────────────────
+server.tool(
+  "list_timers",
+  "Show all currently running timers and their elapsed time without stopping them.",
+  {},
+  async () => {
+    if (timers.size === 0) {
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: "No timers are currently running.",
+          },
+        ],
+      };
+    }
+
+    const now = Date.now();
+    const count = timers.size;
+    const header = `${count} ${count === 1 ? "timer is" : "timers are"} running:`;
+    const lines = Array.from(timers.entries()).map(([name, startTime]) => {
+      const elapsedMs = now - startTime;
+      return `- "${name}": ${formatElapsed(elapsedMs)}`;
+    });
+
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: [header, ...lines].join("\n"),
         },
       ],
     };
